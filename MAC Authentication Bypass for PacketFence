@@ -1,0 +1,67 @@
+dot1x system-auth-control
+!
+radius server packetfence
+ address ipv4 {IPofRADIUS} auth-port 1812 acct-port 1813
+ key {PasswordonRADIUS}
+!
+aaa group server radius pf_group
+ server name packetfence
+!
+aaa authentication login default local
+aaa authentication dot1x default group pf_group
+aaa authorization network default group pf_group
+!
+aaa server radius dynamic-author
+ client {IPofRADIUS} server-key {PasswordofRADIUS}
+ port 3799
+!
+macro name MAB_VoIP_Port
+!
+! This macro applies MAC Auth Bypass to a port for a host and VoIP
+! Enter interface and type - macro apply MAB_VoIP_Port
+!
+switchport mode access
+no power inline never
+no switchport access vlan
+switchport voice vlan 4
+authentication host-mode multi-domain
+authentication order mab
+authentication priority mab
+authentication port-control auto
+authentication periodic
+authentication timer reauthenticate 10800
+authentication timer restart 10800
+authentication violation replace
+mab
+spanning-tree portfast
+spanning-tree bpduguard enable
+spanning-tree guard root
+switchport port-security violation restrict
+switchport port-security
+switchport port-security maximum 2
+@
+macro name MAB_Port
+!
+! This macro applies MAC Auth Bypass to a port for a single host
+! Enter interface and type - macro apply MAB_Port
+!
+switchport mode access
+power inline never
+no switchport access vlan
+no switchport voice vlan
+authentication host-mode single-host
+authentication order mab
+authentication priority mab
+authentication port-control auto
+authentication periodic
+authentication timer reauthenticate 10800
+authentication timer restart 10800
+authentication violation replace
+mab
+spanning-tree portfast
+spanning-tree bpduguard enable
+spanning-tree guard root
+switchport port-security violation  restrict
+switchport port-security
+switchport port-security maximum 1
+@
